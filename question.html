@@ -10,7 +10,7 @@
 <body>
     {{template "header" .}}
     <h1>📖
-        <a href="/books/{{.Book.ID}}/questions">Questions/</a>
+        <a href="/books/{{.Book.ID}}/questions">{{.Book.Name}}/</a>
     </h1>
     <p>
         ❓{{.Question.Text}}
