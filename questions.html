@@ -10,11 +10,11 @@
 <body>
     {{template "header" .}}
     <h1>
-        Book -
+        📖Book -
         <a href="/books/{{.Book.ID}}">{{.Book.Name}} </a>
     </h1>
     <hr>
-    <b>Questions</b>
+    <b>❓Questions</b>
     <details open>
         <summary>Add</summary>
         <form method="post" action="">
@@ -26,6 +26,7 @@
     <ul>
         {{range .Questions}}
         <li>
+            ❓
             <a href="/books/{{$.Book.ID}}/questions/{{.ID}}">{{.Text}} </a>
             <span> | </span>
             <a href="/books/{{$.Book.ID}}/questions/{{.ID}}/answers"> Edit </a>

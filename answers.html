@@ -30,7 +30,7 @@
             {{range .Answers}}
             <li>
                 <input type="radio" name="aid" value="{{.ID}}" {{if .IsCorrect}}checked{{end}} >
-                <span> {{.Text}} </span>
+                <span>🙋 {{.Text}} </span>
                 <button onclick="fetch('/books/{{$.Book.ID}}/questions/{{$.Question.ID}}/answers/{{.ID}}',{method:'DELETE'})">Delete</button>
             </li>
             {{end}}

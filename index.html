@@ -25,7 +25,7 @@
 
     <ul>
         {{range .}}
-        <li>
+        <li>📕
             <a href="/books/{{.ID}}">{{.Name}}</a>
             <button onclick="if(confirm('Are you sure?'))fetch('/books/{{.ID}}',{method:'DELETE'})">Delete</button>
         </li>
