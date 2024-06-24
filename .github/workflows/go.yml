@@ -34,4 +34,4 @@ jobs:
     - name: Deploy
       run: sftp root@8.220.204.169:/root/apps/memo/ <<< $'put -r *'
     - name: Deploy2
-      run: ssh root@8.220.204.169 "kill $(ps aux | grep 'memo' | awk '{print $2}') & cd /root/apps/memo && ./bin/memo &"
+      run: ssh root@8.220.204.169 "kill $(ps aux | grep 'memo' | awk '{print $2}') & cd /root/apps/memo && nohup ./bin/memo &"
