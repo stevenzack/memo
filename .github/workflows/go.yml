@@ -24,7 +24,13 @@ jobs:
     - name: Build
       run: make b
     - name: SSH
-      run: mkdir -p ~/.ssh && echo $'Host *\n    StrictHostKeyChecking no' > ~/.ssh/config && echo "${{ secrets.SSH_PUB }}">~/.ssh/id_rsa.pub && echo "${{ secrets.SSH_PRIV }}">~/.ssh/id_rsa
+      run: |
+        mkdir -p ~/.ssh 
+        echo $'Host *\n    StrictHostKeyChecking no' > ~/.ssh/config
+        echo "${{ secrets.SSH_PUB }}" >> ~/.ssh/id_rsa.pub
+    - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIV }}
     - name: Deploy
       run: sftp root@8.220.204.169:/root/apps/memo/ <<< $'put -r *'
     - name: Deploy2
