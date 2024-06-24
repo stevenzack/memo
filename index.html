@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memo</title>
+</head>
+
+<body>
+    {{block "header" .}}
+    <nav>
+        <a href="/">Home</a>
+    </nav>
+    <hr>
+    {{end}}
+    <h1>Books</h1>
+    <details open>
+        <summary>Add</summary>
+        <form action="/books" method="post">
+            <input type="text" name="name">
+            <input type="submit" value="submit">
+        </form>
+    </details>
+
+    <ul>
+        {{range .}}
+        <li>
+            <a href="/books/{{.ID}}">{{.Name}}</a>
+            <button onclick="if(confirm('Are you sure?'))fetch('/books/{{.ID}}',{method:'DELETE'})">Delete</button>
+        </li>
+        {{end}}
+    </ul>
+</body>
+
+</html>
