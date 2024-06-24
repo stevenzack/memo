@@ -37,4 +37,4 @@ jobs:
     - name: Deploy
       run: ssh root@8.220.204.169 "kill -9 \$(ps -e | grep [m]emo | awk '{print \$1}')"
     - name: Deploy2
-      run: ssh root@8.220.204.169 "cd /root/apps/memo && mv ./bin/main ./bin/memo && nohup ./bin/memo > /dev/null 2>&1 &"
+      run: ssh root@8.220.204.169 "(cd /root/apps/memo && mv ./bin/main ./bin/memo && ./bin/memo) &>/dev/null &"
