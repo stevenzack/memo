@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Answers of Question</title>
+</head>
+
+<body>
+    {{template "header" .}}
+    <h1>
+        <a href="/books/{{.Book.ID}}/questions">Questions/</a>
+    </h1>
+    <p>
+        {{.Question.Text}}
+    </p>
+    <hr>
+    <b>Answers:</b>
+    <details open>
+        <summary>Add</summary>
+        <form method="post" action="">
+            <textarea name="text"></textarea>
+            <br>
+            <input type="submit" value="submit">
+        </form>
+    </details>
+    <form method="post" action="correct">
+        <ul>
+            {{range .Answers}}
+            <li>
+                <input type="radio" name="aid" value="{{.ID}}" {{if .IsCorrect}}checked{{end}} >
+                <span> {{.Text}} </span>
+                <button onclick="fetch('/books/{{$.Book.ID}}/questions/{{$.Question.ID}}/answers/{{.ID}}',{method:'DELETE'})">Delete</button>
+            </li>
+            {{end}}
+
+        </ul>
+        <input type="submit" value="save">
+    </form>
+</body>
+
+</html>

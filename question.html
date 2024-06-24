@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Question</title>
+</head>
+<body>
+    {{template "header" .}}
+    <h1>
+        <a href="/books/{{.Book.ID}}/questions">Questions/</a>
+    </h1>
+    <p>
+        {{.Question.Text}}
+    </p>
+    <hr>
+    <div>
+        Choose your answer:
+    </div>
+    <ul>
+        {{range .Answers}}
+        <li>
+            <p>
+                <a href="/books/{{$.Book.ID}}/questions/{{$.Question.ID}}/choose/{{.ID}}">{{.Text}} </a>
+            </p>
+        </li>
+        {{end}}
+    </ul>
+</body>
+</html>
