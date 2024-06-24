@@ -32,6 +32,8 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIV }}
     - name: Deploy
-      run: sftp root@8.220.204.169:/root/apps/memo/ <<< $'put -r *'
+      run: |
+        ssh root@8.220.204.169 "kill $(ps aux | grep 'memo' | awk '{print $2}') & rm -f /root/apps/memo/bin/memo"
+        sftp root@8.220.204.169:/root/apps/memo/ <<< $'put -r *'
     - name: Deploy2
-      run: ssh root@8.220.204.169 "kill $(ps aux | grep 'memo' | awk '{print $2}') & cd /root/apps/memo && nohup ./bin/memo &"
+      run: ssh root@8.220.204.169 "cd /root/apps/memo && nohup ./bin/memo &"
