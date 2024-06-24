@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +18,20 @@ type D map[string]any
 var (
 	dbc *gorm.DB
 )
+
+func init() {
+	if os.Getenv("GIN_MODE") == "release" {
+		gin.DisableConsoleColor()
+		fo, e := os.OpenFile("log.txt", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+		if e != nil {
+			log.Panic(e)
+			return
+		}
+		gin.DefaultWriter = io.MultiWriter(fo)
+		log.SetFlags(log.Lshortfile)
+		log.SetOutput(fo)
+	}
+}
 
 func main() {
 	r := gin.Default()
