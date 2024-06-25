@@ -57,7 +57,7 @@ func main() {
 		log.Panic(e)
 		return
 	}
-	e = dbc.AutoMigrate(&db.Book{}, &db.Question{}, &db.Answer{})
+	e = dbc.AutoMigrate(&db.Book{}, &db.Question{}, &db.Option{})
 	if e != nil {
 		log.Panic(e)
 		return
@@ -73,16 +73,24 @@ func main() {
 	r.DELETE("/books/:bid/questions/:qid", deleteQuestion)
 	r.GET("/books/:bid/questions/:qid", getQuestion)
 	r.POST("/books/:bid/questions/:qid", updateQuestion)
-	r.GET("/books/:bid/questions/:qid/answers", getAnswers)
-	r.POST("/books/:bid/questions/:qid/answers", addAnswers)
-	r.POST("/books/:bid/questions/:qid/correct", setCorrectAnswer)
-	r.GET("/books/:bid/questions/:qid/choose/:aid", chooseAnswer)
-	r.POST("/books/:bid/questions/:qid/answers/:aid", updateAnswer)
-	r.DELETE("/books/:bid/questions/:qid/answers/:aid", deleteAnswer)
+	r.GET("/books/:bid/questions/:qid/options", getAnswers)
+	r.POST("/books/:bid/questions/:qid/options", addAnswers)
+	r.POST("/books/:bid/questions/:qid/options/:oid", updateAnswer)
+	r.DELETE("/books/:bid/questions/:qid/options/:oid", deleteAnswer)
+	r.GET("/books/:bid/questions/:qid/options/:oid", getAnswer)
 	r.Run()
 }
+func getAnswer(c *gin.Context) {
+	var a db.Option
+	e := dbc.First(&a, c.Param("oid")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+	c.HTML(200, "option.html", a)
+}
 func deleteAnswer(c *gin.Context) {
-	e := dbc.Delete(&db.Answer{}, c.Param("aid")).Error
+	e := dbc.Delete(&db.Option{}, c.Param("oid")).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return
@@ -90,12 +98,12 @@ func deleteAnswer(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, c.Request.Referer())
 }
 func updateAnswer(c *gin.Context) {
-	e := dbc.Model(&db.Answer{}).Where("id=?", c.Param("aid")).Update("text", c.Request.FormValue("text")).Error
+	e := dbc.Model(&db.Option{}).Where("id=?", c.Param("oid")).Update("text", c.Request.FormValue("text")).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return
 	}
-	c.Redirect(http.StatusSeeOther, c.Request.Referer())
+	c.Redirect(http.StatusSeeOther, c.Request.Referer()+"/..")
 }
 func updateQuestion(c *gin.Context) {
 	var b db.Book
@@ -139,101 +147,6 @@ func updateBook(c *gin.Context) {
 	}
 	c.Redirect(http.StatusSeeOther, c.Request.Referer())
 }
-func chooseAnswer(c *gin.Context) {
-	var b db.Book
-	e := dbc.First(&b, c.Param("bid")).Error
-	if e != nil {
-		c.AbortWithError(500, e)
-		return
-	}
-
-	var q db.Question
-	e = dbc.First(&q, c.Param("qid")).Error
-	if e != nil {
-		c.AbortWithError(500, e)
-		return
-	}
-
-	if q.BookID != b.ID {
-		c.String(400, "invalid book ID for question")
-		return
-	}
-
-	var a db.Answer
-	e = dbc.First(&a, c.Param("aid")).Error
-	if e != nil {
-		c.AbortWithError(500, e)
-		return
-	}
-	if a.QuestionID != q.ID {
-		c.String(400, "invalid question ID for answer")
-		return
-	}
-
-	if !a.IsCorrect {
-		c.String(400, "Wrong answer")
-		return
-	}
-
-	var q2 db.Question
-	e = dbc.Limit(1).Where("book_id=? and id>?", b.ID, q.ID).First(&q2).Error
-	if e != nil {
-		if e == gorm.ErrRecordNotFound {
-			c.Redirect(http.StatusSeeOther, "/books/"+c.Param("bid")+"/questions")
-			return
-		}
-		c.AbortWithError(500, e)
-		return
-	}
-
-	c.Redirect(http.StatusSeeOther, "/books/"+c.Param("bid")+"/questions/"+strconv.FormatUint(uint64(q2.ID), 10))
-}
-func setCorrectAnswer(c *gin.Context) {
-	var b db.Book
-	e := dbc.First(&b, c.Param("bid")).Error
-	if e != nil {
-		c.AbortWithError(500, e)
-		return
-	}
-
-	var q db.Question
-	e = dbc.First(&q, c.Param("qid")).Error
-	if e != nil {
-		c.AbortWithError(500, e)
-		return
-	}
-
-	if q.BookID != b.ID {
-		c.String(400, "invalid book ID for question")
-		return
-	}
-
-	var a db.Answer
-	e = dbc.First(&a, c.Request.FormValue("aid")).Error
-	if e != nil {
-		c.AbortWithError(500, e)
-		return
-	}
-	if a.QuestionID != q.ID {
-		c.String(400, "invalid question ID for answer")
-		return
-	}
-
-	a.IsCorrect = true
-	e = dbc.Model(&a).Where("question_id=?", q.ID).Update("is_correct", nil).Error
-	if e != nil {
-		c.AbortWithError(500, e)
-		return
-	}
-
-	e = dbc.Model(&a).Update("is_correct", true).Error
-	if e != nil {
-		c.AbortWithError(500, e)
-		return
-	}
-
-	c.Redirect(http.StatusSeeOther, c.Request.Referer())
-}
 func addAnswers(c *gin.Context) {
 	var b db.Book
 	e := dbc.First(&b, c.Param("bid")).Error
@@ -254,7 +167,7 @@ func addAnswers(c *gin.Context) {
 		return
 	}
 
-	e = dbc.Create(&db.Answer{
+	e = dbc.Create(&db.Option{
 		QuestionID: q.ID,
 		Text:       c.Request.FormValue("text"),
 	}).Error
@@ -284,17 +197,17 @@ func getAnswers(c *gin.Context) {
 		return
 	}
 
-	var vs []db.Answer
+	var vs []db.Option
 	e = dbc.Where("question_id = ?", q.ID).Find(&vs).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return
 	}
 
-	c.HTML(200, "answers.html", D{
+	c.HTML(200, "options.html", D{
 		"Book":     b,
 		"Question": q,
-		"Answers":  vs,
+		"Options":  vs,
 	})
 }
 func getQuestion(c *gin.Context) {
@@ -317,7 +230,7 @@ func getQuestion(c *gin.Context) {
 		return
 	}
 
-	var vs []db.Answer
+	var vs []db.Option
 	e = dbc.Where("question_id = ?", q.ID).Find(&vs).Error
 	if e != nil {
 		c.AbortWithError(500, e)
@@ -327,7 +240,7 @@ func getQuestion(c *gin.Context) {
 	c.HTML(200, "question.html", D{
 		"Book":     b,
 		"Question": q,
-		"Answers":  vs,
+		"Options":  vs,
 	})
 }
 func deleteQuestion(c *gin.Context) {

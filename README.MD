@@ -3,8 +3,8 @@
 # todo
 
 - [x]questions pagination
-- edit book/question/answer
-- single answer -> mark correct
+- [x]edit book/question/option
+- [x]single option -> mark correct
 - Slay
 - Mistake Book
 - add video for QAs

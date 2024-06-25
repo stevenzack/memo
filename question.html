@@ -14,21 +14,16 @@
     </h1>
     <p>
         ❓{{.Question.Text}}
-        <a href="./{{.Question.ID}}/answers"> ✍️ </a>
+        <a href="./{{.Question.ID}}/options"> ✍️ </a>
     </p>
     <hr>
-    <div>
-        Choose your answer:
-    </div>
-    <ul>
-        {{range .Answers}}
-        <li>
-            <a href="/books/{{$.Book.ID}}/questions/{{$.Question.ID}}/choose/{{.ID}}">
-                <pre>🙋{{.Text}}</pre>
-            </a>
-        </li>
+    <details>
+        <summary>🙋Show option</summary>
+        {{range .Options}}
+        <pre>{{.Text}}</pre>
+        <hr>
         {{end}}
-    </ul>
+    </details>
 </body>
 
 </html>

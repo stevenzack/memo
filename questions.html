@@ -32,7 +32,7 @@
             ❓
             <a href="/books/{{$.Book.ID}}/questions/{{.ID}}">{{.Text}} </a>
             <span> | </span>
-            <a href="/books/{{$.Book.ID}}/questions/{{.ID}}/answers"> ✍️ </a>
+            <a href="/books/{{$.Book.ID}}/questions/{{.ID}}/options"> ✍️ </a>
             <button onclick="if(confirm('Are you sure to delete?')) fetch('/books/{{$.Book.ID}}/questions/{{.ID}}',{method:'DELETE'})">🚮</button>
         </li>
         {{end}}

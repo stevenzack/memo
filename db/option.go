@@ -2,10 +2,9 @@ package db
 
 import "gorm.io/gorm"
 
-type Answer struct {
+type Option struct {
 	gorm.Model
 	QuestionID uint
 	Question   Question
-	IsCorrect  bool
 	Text       string
 }

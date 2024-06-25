@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Options of Question</title>
+</head>
+
+<body>
+    {{template "header" .}}
+    <h1>
+        <a href="/books/{{.Book.ID}}/questions">Questions/</a>
+    </h1>
+    <p>
+        {{.Question.Text}}
+        <a href="."> ▶️ </a>
+    <details>
+        <summary> ✍️ </summary>
+        <form method="post" action=".">
+            <textarea name="text">{{.Question.Text}}</textarea>
+            <input type="submit" value="submit">
+        </form>
+    </details>
+    </p>
+    <hr>
+    <b>Options:</b>
+    <details open>
+        <summary>Add</summary>
+        <form method="post" action="">
+            <textarea name="text"></textarea>
+            <br>
+            <input type="submit" value="submit">
+        </form>
+    </details>
+    <ul>
+        {{range .Options}}
+        <li>
+            <pre>{{.Text}}</pre>
+            <a href="./options/{{.ID}}"> ✍️ </a>
+            <button onclick="fetch('/books/{{$.Book.ID}}/questions/{{$.Question.ID}}/options/{{.ID}}', { method: 'DELETE' })">Delete</button>
+            <hr>
+        </li>
+        {{end}}
+    </ul>
+</body>
+
+</html>
