@@ -132,7 +132,7 @@ func updateBook(c *gin.Context) {
 		return
 	}
 
-	e = dbc.Model(&b).Update("name", c.Request.FormValue("name")).Error
+	e = dbc.Model(&b).Update("name", c.Request.FormValue("name")).Update("desc", c.Request.FormValue("desc")).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return

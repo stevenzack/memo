@@ -14,6 +14,7 @@
     </h1>
     <p>
         ❓{{.Question.Text}}
+        <a href="./{{.Question.ID}}/answers"> ✍️ </a>
     </p>
     <hr>
     <div>
@@ -23,9 +24,7 @@
         {{range .Answers}}
         <li>
             <a href="/books/{{$.Book.ID}}/questions/{{$.Question.ID}}/choose/{{.ID}}">
-                <p>
-                    🙋{{.Text}}
-                </p>
+                <pre>🙋{{.Text}}</pre>
             </a>
         </li>
         {{end}}

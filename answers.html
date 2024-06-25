@@ -14,13 +14,13 @@
     </h1>
     <p>
         {{.Question.Text}}
-        <details>
-            <summary> ✍️ </summary>
-            <form method="post" action="..">
-                <input type="text" name="text" value="{{.Question.Text}}">
-                <input type="submit" value="submit">
-            </form>
-        </details>
+    <details>
+        <summary> ✍️ </summary>
+        <form method="post" action=".">
+            <input type="text" name="text" value="{{.Question.Text}}">
+            <input type="submit" value="submit">
+        </form>
+    </details>
     </p>
     <hr>
     <b>Answers:</b>
@@ -36,21 +36,24 @@
         <ul>
             {{range .Answers}}
             <li>
-                <input type="radio" name="aid" value="{{.ID}}" {{if .IsCorrect}}checked{{end}} >
-                <span>🙋 {{.Text}} </span>
-                <button onclick="fetch('/books/{{$.Book.ID}}/questions/{{$.Question.ID}}/answers/{{.ID}}',{method:'DELETE'})">Delete</button>
+                <input id="answer-{{.ID}}" type="radio" name="aid" value="{{.ID}}" {{if .IsCorrect}}checked{{end}}>
+                <label for="answer-{{.ID}}">
+                    <pre>🙋 {{.Text}} </pre>
+                </label>
+                <button onclick="fetch('/books/{{$.Book.ID}}/questions/{{$.Question.ID}}/answers/{{.ID}}',{method:'DELETE'}).catch(e=>alert(e)).then(()=>location.href=location.href)">Delete</button>
                 <details>
                     <summary> ✍️ </summary>
                     <form method="post" action="./answers/{{.ID}}">
-                        <input type="text" name="text" value="{{.Text}}">
+                        <textarea name="text">
+                            {{.Text}}
+                        </textarea><br>
                         <input type="submit" value="submit">
                     </form>
                 </details>
             </li>
             {{end}}
-
         </ul>
-        <input type="submit" value="save">
+        <input type="submit" value="save answer">
     </form>
 </body>
 
