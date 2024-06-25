@@ -29,8 +29,8 @@
             ❓
             <a href="/books/{{$.Book.ID}}/questions/{{.ID}}">{{.Text}} </a>
             <span> | </span>
-            <a href="/books/{{$.Book.ID}}/questions/{{.ID}}/answers"> Edit </a>
-            <button onclick="if(confirm('Are you sure to delete?')) fetch('/books/{{$.Book.ID}}/questions/{{.ID}}',{method:'DELETE'})">Delete</button>
+            <a href="/books/{{$.Book.ID}}/questions/{{.ID}}/answers"> ✍️ </a>
+            <button onclick="if(confirm('Are you sure to delete?')) fetch('/books/{{$.Book.ID}}/questions/{{.ID}}',{method:'DELETE'})">🚮</button>
         </li>
         {{end}}
     </ul>

@@ -67,15 +67,77 @@ func main() {
 	r.POST("/books", addbooks)
 	r.DELETE("/books/:bid", deleteBook)
 	r.GET("/books/:bid", getBook)
+	r.POST("/books/:bid", updateBook)
 	r.GET("/books/:bid/questions", questions)
 	r.POST("/books/:bid/questions", addQuestion)
 	r.DELETE("/books/:bid/questions/:qid", deleteQuestion)
 	r.GET("/books/:bid/questions/:qid", getQuestion)
+	r.POST("/books/:bid/questions/:qid", updateQuestion)
 	r.GET("/books/:bid/questions/:qid/answers", getAnswers)
 	r.POST("/books/:bid/questions/:qid/answers", addAnswers)
 	r.POST("/books/:bid/questions/:qid/correct", setCorrectAnswer)
 	r.GET("/books/:bid/questions/:qid/choose/:aid", chooseAnswer)
+	r.POST("/books/:bid/questions/:qid/answers/:aid", updateAnswer)
+	r.DELETE("/books/:bid/questions/:qid/answers/:aid", deleteAnswer)
 	r.Run()
+}
+func deleteAnswer(c *gin.Context) {
+	e := dbc.Delete(&db.Answer{}, c.Param("aid")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+	c.Redirect(http.StatusSeeOther, c.Request.Referer())
+}
+func updateAnswer(c *gin.Context) {
+	e := dbc.Model(&db.Answer{}).Where("id=?", c.Param("aid")).Update("text", c.Request.FormValue("text")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+	c.Redirect(http.StatusSeeOther, c.Request.Referer())
+}
+func updateQuestion(c *gin.Context) {
+	var b db.Book
+	e := dbc.First(&b, c.Param("bid")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+
+	var q db.Question
+	e = dbc.First(&q, c.Param("qid")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+
+	if q.BookID != b.ID {
+		c.String(400, "invalid book ID for question")
+		return
+	}
+
+	e = dbc.Model(&q).Update("text", c.Request.FormValue("text")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+	c.Redirect(http.StatusSeeOther, c.Request.Referer())
+}
+func updateBook(c *gin.Context) {
+	var b db.Book
+	e := dbc.First(&b, c.Param("bid")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+
+	e = dbc.Model(&b).Update("name", c.Request.FormValue("name")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+	c.Redirect(http.StatusSeeOther, c.Request.Referer())
 }
 func chooseAnswer(c *gin.Context) {
 	var b db.Book
