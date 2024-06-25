@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stevenzack/memo/db"
+	"github.com/stevenzack/memo/util"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -303,13 +304,20 @@ func questions(c *gin.Context) {
 		return
 	}
 
+	var total int64
+	e = dbc.Model(&db.Question{}).Where("book_id=?", b.ID).Count(&total).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+
 	var vs []db.Question
-	const size = 20
+	const size = 10
 	page, _ := strconv.Atoi(c.Query("page"))
 	if page <= 1 {
 		page = 1
 	}
-	e = dbc.Offset((page - 1) * size).Limit(size).Find(&vs).Error
+	e = dbc.Where("book_id=?", b.ID).Offset((page - 1) * size).Limit(size).Find(&vs).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return
@@ -318,6 +326,9 @@ func questions(c *gin.Context) {
 	c.HTML(200, "questions.html", D{
 		"Book":      b,
 		"Questions": vs,
+		"Total":     total,
+		"Page":      page,
+		"TotalPage": util.PageNum(total, size),
 	})
 }
 func getBook(c *gin.Context) {

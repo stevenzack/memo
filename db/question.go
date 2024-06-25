@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Question struct {
 	gorm.Model
-	BookID uint
+	BookID uint `gorm:"index"`
 	Book   Book
 	Text   string
 }

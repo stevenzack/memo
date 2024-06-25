@@ -34,6 +34,16 @@
         </li>
         {{end}}
     </ul>
+    
+    {{if gt .Page 1}}
+    <a href="?page={{add .Page -1}}">&lt;Prev</a>
+    {{end}}
+    <span> {{.Page}} </span>
+    <span> / </span>
+    <span> {{.TotalPage}} </span>
+    {{if lt .Page .TotalPage}}
+    <a href="?page={{add .Page 1}}">Next&gt;</a>
+    {{end}}
 </body>
 
 </html>
