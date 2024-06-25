@@ -7,4 +7,8 @@ type Question struct {
 	BookID uint `gorm:"index"`
 	Book   Book
 	Text   string
+
+	Slayed     bool   `gorm:"index"`
+	Done       bool   `gorm:"index"`
+	WrongCount uint16 `gorm:"index"`
 }

@@ -6,4 +6,6 @@ type Book struct {
 	gorm.Model
 	Name string
 	Desc string
+
+	Round uint8
 }
