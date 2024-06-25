@@ -39,7 +39,12 @@ func main() {
 	r := gin.Default()
 
 	//html
-	t, e := template.ParseGlob("*.html")
+	var t = template.New("views").Funcs(template.FuncMap{
+		"add": func(a, b int) int {
+			return a + b
+		},
+	})
+	t, e := t.ParseGlob("*.html")
 	if e != nil {
 		log.Panic(e)
 		return
