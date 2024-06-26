@@ -16,11 +16,25 @@
         ❓{{.Question.Text}}
         <a href="./{{.Question.ID}}/options"> ✍️ </a>
     </p>
+    <p>
+        {{if ne .Question.Audio ""}}
+        <audio src="/{{.Question.Audio}}" autoplay controls></audio>
+        {{end}}
+        {{if ne .Question.Video ""}}
+        <video src="/{{.Question.Video}}" autoplay controls></video>
+        {{end}}
+    </p>
     <hr>
     <details>
         <summary>🙋Show option</summary>
         {{range .Options}}
         <pre>{{.Text}}</pre>
+        {{if ne .Audio ""}}
+        <audio src="/{{.Audio}}" controls></audio>
+        {{end}}
+        {{if ne .Video ""}}
+        <video src="/{{.Video}}" controls></video>
+        {{end}}
         <hr>
         {{end}}
     </details>

@@ -7,4 +7,6 @@ type Option struct {
 	QuestionID uint
 	Question   Question
 	Text       string
+	Video      string
+	Audio      string
 }

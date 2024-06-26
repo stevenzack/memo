@@ -7,6 +7,8 @@ type Question struct {
 	BookID uint `gorm:"index"`
 	Book   Book
 	Text   string
+	Video  string
+	Audio  string
 
 	Slayed     bool   `gorm:"index"`
 	Done       bool   `gorm:"index"`

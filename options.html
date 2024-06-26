@@ -17,8 +17,10 @@
         <a href="."> ▶️ </a>
     <details>
         <summary> ✍️ </summary>
-        <form method="post" action=".">
-            <textarea name="text">{{.Question.Text}}</textarea>
+        <form method="post" action="." enctype="multipart/form-data">
+            <textarea name="text">{{.Question.Text}}</textarea><br>
+            Video: <input type="file" name="video"><br>
+            Audio: <input type="file" name="audio"><br>
             <input type="submit" value="submit">
         </form>
     </details>
@@ -36,6 +38,9 @@
     <ul>
         {{range .Options}}
         <li>
+            {{if ne .Video ""}}[Video]{{end}}
+            {{if ne .Audio ""}}[Audio]{{end}}
+
             <pre>{{.Text}}</pre>
             <a href="./options/{{.ID}}"> ✍️ </a>
             <button onclick="fetch('/books/{{$.Book.ID}}/questions/{{$.Question.ID}}/options/{{.ID}}', { method: 'DELETE' })">Delete</button>

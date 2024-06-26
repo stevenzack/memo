@@ -4,8 +4,10 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +18,10 @@ import (
 )
 
 type D map[string]any
+
+const (
+	resourceDir = "static"
+)
 
 var (
 	dbc *gorm.DB
@@ -64,6 +70,7 @@ func main() {
 	}
 
 	r.GET("/", home)
+	r.Static("/"+resourceDir, "./"+resourceDir)
 	r.POST("/books", addbooks)
 	r.DELETE("/books/:bid", deleteBook)
 	r.GET("/books/:bid", getBook)
@@ -90,6 +97,8 @@ func getAnswer(c *gin.Context) {
 	c.HTML(200, "option.html", a)
 }
 func deleteAnswer(c *gin.Context) {
+	os.Remove(resourceDir + "/books/" + c.Param("bid") + "/questions/" + c.Param("qid") + "/options/" + c.Param("oid"))
+
 	e := dbc.Delete(&db.Option{}, c.Param("oid")).Error
 	if e != nil {
 		c.AbortWithError(500, e)
@@ -98,13 +107,90 @@ func deleteAnswer(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, c.Request.Referer())
 }
 func updateAnswer(c *gin.Context) {
-	e := dbc.Model(&db.Option{}).Where("id=?", c.Param("oid")).Update("text", c.Request.FormValue("text")).Error
+	var b db.Book
+	e := dbc.First(&b, c.Param("bid")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+
+	var q db.Question
+	e = dbc.First(&q, c.Param("qid")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+
+	if q.BookID != b.ID {
+		c.String(400, "invalid book ID for question")
+		return
+	}
+
+	var o db.Option
+	e = dbc.First(&o, c.Param("oid")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+
+	dstDir := "books/" + c.Param("bid") + "/questions/" + c.Param("qid") + "/options/" + c.Param("oid")
+	audio, e := readStaticFile(c, "audio", dstDir)
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+	if audio != nil {
+		os.Remove(o.Audio)
+	}
+	video, e := readStaticFile(c, "video", dstDir)
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+	if video != nil {
+		os.Remove(o.Video)
+	}
+
+	e = dbc.Model(&db.Option{}).Where("id=?", c.Param("oid")).Update("text", c.Request.FormValue("text")).Update("video", video).Update("audio", audio).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return
 	}
 	c.Redirect(http.StatusSeeOther, c.Request.Referer()+"/..")
 }
+
+func readStaticFile(c *gin.Context, formName string, dstDir string) (*string, error) {
+	fh, e := c.FormFile(formName)
+	if e != nil {
+		if e == http.ErrMissingFile {
+			return nil, nil
+		}
+		log.Println(e)
+		return nil, e
+	}
+	fi, e := fh.Open()
+	if e != nil {
+		log.Println(e)
+		return nil, e
+	}
+	defer fi.Close()
+	out := resourceDir + "/" + dstDir + "/" + strconv.Itoa(rand.Intn(100000)) + filepath.Ext(fh.Filename)
+	os.MkdirAll(filepath.Dir(out), 0755)
+	fo, e := os.OpenFile(out, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if e != nil {
+		log.Println(e)
+		return nil, e
+	}
+	defer fo.Close()
+
+	_, e = io.Copy(fo, fi)
+	if e != nil {
+		log.Println(e)
+		return nil, e
+	}
+	return &out, nil
+}
+
 func updateQuestion(c *gin.Context) {
 	var b db.Book
 	e := dbc.First(&b, c.Param("bid")).Error
@@ -125,7 +211,25 @@ func updateQuestion(c *gin.Context) {
 		return
 	}
 
-	e = dbc.Model(&q).Update("text", c.Request.FormValue("text")).Error
+	dstDir := "books/" + c.Param("bid") + "/questions/" + c.Param("qid")
+	audio, e := readStaticFile(c, "audio", dstDir)
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+	if audio != nil {
+		os.Remove(q.Audio)
+	}
+	video, e := readStaticFile(c, "video", dstDir)
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+	if video != nil {
+		os.Remove(q.Video)
+	}
+
+	e = dbc.Model(&q).Update("text", c.Request.FormValue("text")).Update("audio", audio).Update("video", video).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return
@@ -251,6 +355,15 @@ func deleteQuestion(c *gin.Context) {
 		return
 	}
 
+	var q db.Question
+	e = dbc.First(&q, c.Param("qid")).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+
+	os.RemoveAll(resourceDir + "/books/" + c.Param("bid") + "/questions/" + c.Param("qid"))
+
 	e = dbc.Where("book_id = ?", b.ID).Delete(&db.Question{}, c.Param("qid")).Error
 	if e != nil {
 		c.AbortWithError(500, e)
@@ -326,6 +439,7 @@ func deleteBook(c *gin.Context) {
 		c.AbortWithError(500, e)
 		return
 	}
+	os.RemoveAll(resourceDir + "/books/" + c.Param("bid"))
 	c.Redirect(http.StatusSeeOther, c.Request.Referer())
 }
 func home(c *gin.Context) {
