@@ -49,6 +49,12 @@ func main() {
 		"add": func(a, b int) int {
 			return a + b
 		},
+		"subAbs": func(a, b uint16) uint16 {
+			if a < b {
+				return 0
+			}
+			return a - b
+		},
 	})
 	t, e := t.ParseGlob("*.html")
 	if e != nil {
@@ -238,30 +244,51 @@ func updateQuestion(c *gin.Context) {
 	}
 
 	playNext := false
+	incDone := false
+	// slayed
 	slayed := c.Request.FormValue("slayed")
 	if slayed != "" {
-		i := 0
+		var i any = nil
 		if slayed == "true" {
 			i = 1
 		}
 		m = m.Update("slayed", i)
 		playNext = true
+		incDone = true
 	}
 
+	//wrong
+	wrong := c.Request.FormValue("wrong")
+	if wrong != "" {
+		m = m.Update("wrong_count", q.WrongCount.Int16+1)
+		playNext = true
+	}
+
+	// done
 	done := c.Request.FormValue("done")
 	if done != "" {
-		i := 0
+		var i any = nil
 		if done == "true" {
 			i = 1
 		}
 		m = m.Update("done", i)
 		playNext = true
+		incDone = true
 	}
 
 	e = m.Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return
+	}
+
+	// inc done
+	if incDone {
+		e = dbc.Model(&b).Update("today_done", b.TodayDone+1).Error
+		if e != nil {
+			c.AbortWithError(500, e)
+			return
+		}
 	}
 
 	if playNext {
@@ -278,7 +305,19 @@ func updateBook(c *gin.Context) {
 		return
 	}
 
-	e = dbc.Model(&b).Update("name", c.Request.FormValue("name")).Update("desc", c.Request.FormValue("desc")).Error
+	var total int64
+	e = dbc.Model(&db.Question{}).Where("book_id=?", b.ID).Count(&total).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+
+	dailyPlan, _ := strconv.ParseUint(c.Request.FormValue("daily_plan"), 10, 16)
+	if dailyPlan > uint64(total) {
+		dailyPlan = uint64(total)
+	}
+
+	e = dbc.Model(&b).Update("name", c.Request.FormValue("name")).Update("desc", c.Request.FormValue("desc")).Update("daily_plan", uint16(dailyPlan)).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return
@@ -480,14 +519,39 @@ func getBook(c *gin.Context) {
 	}
 
 	if c.Query("action") == "play" {
+		//play
+		if b.DailyPlan <= 0 {
+			c.String(200, "Daily plan of this book is not set.")
+			return
+		}
+
+		// find the next not done
 		var q db.Question
-		e = dbc.Model(&db.Question{}).Where("slayed is null and done is null").Order("id asc").Limit(1).First(&q).Error
+		e = dbc.Model(&db.Question{}).Where("slayed is null and done is null").Order("wrong_count asc").Order("id asc").Limit(1).First(&q).Error
 		if e != nil {
 			if e == gorm.ErrRecordNotFound {
+
+				// next round
+				e = dbc.Model(&b).Update("round", b.Round+1).Update("today_done", 0).Error
+				if e != nil {
+					c.AbortWithError(500, e)
+					return
+				}
+				e = dbc.Model(&db.Question{}).Where("book_id=?", b.ID).Update("done", nil).Error
+				if e != nil {
+					c.AbortWithError(500, e)
+					return
+				}
+
 				c.HTML(200, "done.html", b)
 				return
 			}
 			c.AbortWithError(500, e)
+			return
+		}
+
+		if b.TodayDone >= b.DailyPlan {
+			c.HTML(200, "done-today.html", b)
 			return
 		}
 		c.Redirect(http.StatusSeeOther, "/books/"+c.Param("bid")+"/questions/"+strconv.FormatUint(uint64(q.ID), 10))

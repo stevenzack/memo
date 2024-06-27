@@ -9,4 +9,5 @@ type Book struct {
 
 	Round     uint8
 	DailyPlan uint16
+	TodayDone uint16
 }

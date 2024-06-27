@@ -19,7 +19,10 @@
         Round: <b>{{.Book.Round}} </b>
     </p>
     <p>
-        Remains: <b>{{.Remains}} / {{.Total}} </b>
+        Total Remains: <b>{{.Remains}} / {{.Total}} </b>
+    </p>
+    <p>
+        Today's Task: <b> {{subAbs .Book.DailyPlan .Book.TodayDone}} / {{.Book.DailyPlan}} </b>
     </p>
     <details>
         <summary> ✍️ </summary>
@@ -27,7 +30,11 @@
             <input type="text" name="name" value="{{.Book.Name}}"><br>
             <textarea name="desc">
                 {{.Book.Desc}}
-            </textarea>
+            </textarea><br>
+            <div>
+                DailyPlan:
+                <input type="number" name="daily_plan" placeholder="How many questions you want to do everyday?" value="{{.Book.DailyPlan}}">
+            </div>
             <input type="submit" value="submit">
         </form>
     </details>

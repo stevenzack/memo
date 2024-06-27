@@ -30,7 +30,7 @@
     <ul>
         {{range .Questions}}
         <li>
-            ❓
+           {{if .Slayed.Bool}}🗡️{{else}} {{if .Done.Bool}}✅{{else}}❓{{end}}{{end}}
             <a href="/books/{{$.Book.ID}}/questions/{{.ID}}">{{.Text}} </a>
             <span> | </span>
             <a href="/books/{{$.Book.ID}}/questions/{{.ID}}/options"> ✍️ </a>

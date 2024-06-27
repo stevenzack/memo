@@ -12,8 +12,11 @@
     <h1>📖
         <a href="/books/{{.Book.ID}}/questions">{{.Book.Name}}/</a>
     </h1>
+    Today's Task: 
+    <b> {{subAbs .Book.DailyPlan .Book.TodayDone}} / {{.Book.DailyPlan}} </b>
     <p>
-        ❓{{.Question.Text}}
+        {{if .Question.Slayed.Bool}}🗡️{{else}} {{if .Question.Done.Bool}}✅{{else}}❓{{end}}{{end}}
+        {{.Question.Text}}
         <a href="./{{.Question.ID}}/options"> ✍️ </a>
     </p>
     <p>
@@ -39,14 +42,20 @@
         {{end}}
     </details>
     <hr>
+    {{if .Question.Slayed.Bool}}
+    <form method="post" action="" enctype="multipart/form-data" style="display: inline-block;">
+        <input type="hidden" name="slayed" value="false">
+        <input type="submit" value="🗡️Unslay">
+    </form>{{else}}
     <form method="post" action="" enctype="multipart/form-data" style="display: inline-block;">
         <input type="hidden" name="slayed" value="true">
-        <input type="submit" value="Slay">
-    </form>
-    <button>Wrong</button>
+        <input type="submit" value="🗡️Slay">
+    </form>{{end}}
+
+    <button>❌Wrong</button>
     <form method="post" action="" enctype="multipart/form-data" style="display: inline-block;">
         <input type="hidden" name="done" value="true">
-        <input type="submit" value="Done">
+        <input type="submit" value="✅Done">
     </form>
 </body>
 

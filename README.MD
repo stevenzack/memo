@@ -7,5 +7,6 @@
 - [x]single option -> mark correct
 - Slay, mark as done/wrong
 - Mistake Book
-- add video for QAs
+- review
+- [x]add video for QAs
 - question list -> show hasMedia icon
