@@ -7,5 +7,6 @@ type Book struct {
 	Name string
 	Desc string
 
-	Round uint8
+	Round     uint8
+	DailyPlan uint16
 }

@@ -1,12 +1,16 @@
 package db
 
-import "gorm.io/gorm"
+import (
+	"database/sql"
+
+	"gorm.io/gorm"
+)
 
 type Option struct {
 	gorm.Model
 	QuestionID uint
 	Question   Question
 	Text       string
-	Video      string
-	Audio      string
+	Video      sql.NullString
+	Audio      sql.NullString
 }

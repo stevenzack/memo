@@ -17,11 +17,11 @@
         <a href="./{{.Question.ID}}/options"> ✍️ </a>
     </p>
     <p>
-        {{if ne .Question.Audio ""}}
-        <audio src="/{{.Question.Audio}}" autoplay controls></audio>
+        {{if ne .Question.Audio.String ""}}
+        <audio src="/{{.Question.Audio.String}}" autoplay controls></audio>
         {{end}}
-        {{if ne .Question.Video ""}}
-        <video src="/{{.Question.Video}}" autoplay controls></video>
+        {{if ne .Question.Video.String ""}}
+        <video src="/{{.Question.Video.String}}" autoplay controls></video>
         {{end}}
     </p>
     <hr>
@@ -29,18 +29,25 @@
         <summary>🙋Show option</summary>
         {{range .Options}}
         <pre>{{.Text}}</pre>
-        {{if ne .Audio ""}}
-        <audio src="/{{.Audio}}" controls></audio>
+        {{if ne .Audio.String ""}}
+        <audio src="/{{.Audio.String}}" controls></audio>
         {{end}}
-        {{if ne .Video ""}}
-        <video src="/{{.Video}}" controls></video>
+        {{if ne .Video.String ""}}
+        <video src="/{{.Video.String}}" controls></video>
         {{end}}
         <hr>
         {{end}}
     </details>
-    <button>Slay</button>
+    <hr>
+    <form method="post" action="" enctype="multipart/form-data" style="display: inline-block;">
+        <input type="hidden" name="slayed" value="true">
+        <input type="submit" value="Slay">
+    </form>
     <button>Wrong</button>
-    <button>Done</button>
+    <form method="post" action="" enctype="multipart/form-data" style="display: inline-block;">
+        <input type="hidden" name="done" value="true">
+        <input type="submit" value="Done">
+    </form>
 </body>
 
 </html>

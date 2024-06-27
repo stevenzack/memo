@@ -140,7 +140,7 @@ func updateAnswer(c *gin.Context) {
 		return
 	}
 	if audio != nil {
-		os.Remove(o.Audio)
+		os.Remove(o.Audio.String)
 	}
 	video, e := readStaticFile(c, "video", dstDir)
 	if e != nil {
@@ -148,7 +148,7 @@ func updateAnswer(c *gin.Context) {
 		return
 	}
 	if video != nil {
-		os.Remove(o.Video)
+		os.Remove(o.Video.String)
 	}
 
 	e = dbc.Model(&db.Option{}).Where("id=?", c.Param("oid")).Update("text", c.Request.FormValue("text")).Update("video", video).Update("audio", audio).Error
@@ -211,6 +211,7 @@ func updateQuestion(c *gin.Context) {
 		return
 	}
 
+	m := dbc.Model(&q)
 	dstDir := "books/" + c.Param("bid") + "/questions/" + c.Param("qid")
 	audio, e := readStaticFile(c, "audio", dstDir)
 	if e != nil {
@@ -218,7 +219,8 @@ func updateQuestion(c *gin.Context) {
 		return
 	}
 	if audio != nil {
-		os.Remove(q.Audio)
+		os.Remove(q.Audio.String)
+		m = m.Update("audio", audio)
 	}
 	video, e := readStaticFile(c, "video", dstDir)
 	if e != nil {
@@ -226,12 +228,44 @@ func updateQuestion(c *gin.Context) {
 		return
 	}
 	if video != nil {
-		os.Remove(q.Video)
+		os.Remove(q.Video.String)
+		m = m.Update("video", video)
 	}
 
-	e = dbc.Model(&q).Update("text", c.Request.FormValue("text")).Update("audio", audio).Update("video", video).Error
+	text := c.Request.FormValue("text")
+	if text != "" {
+		m = m.Update("text", text)
+	}
+
+	playNext := false
+	slayed := c.Request.FormValue("slayed")
+	if slayed != "" {
+		i := 0
+		if slayed == "true" {
+			i = 1
+		}
+		m = m.Update("slayed", i)
+		playNext = true
+	}
+
+	done := c.Request.FormValue("done")
+	if done != "" {
+		i := 0
+		if done == "true" {
+			i = 1
+		}
+		m = m.Update("done", i)
+		playNext = true
+	}
+
+	e = m.Error
 	if e != nil {
 		c.AbortWithError(500, e)
+		return
+	}
+
+	if playNext {
+		c.Redirect(http.StatusSeeOther, "/books/"+c.Param("bid")+"?action=play")
 		return
 	}
 	c.Redirect(http.StatusSeeOther, c.Request.Referer())
@@ -378,14 +412,27 @@ func addQuestion(c *gin.Context) {
 		return
 	}
 
-	v := db.Question{
+	q := db.Question{
 		BookID: b.ID,
 		Text:   c.Request.FormValue("text"),
 	}
-	e = dbc.Create(&v).Error
+	e = dbc.Create(&q).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return
+	}
+
+	//option
+	opt := c.Request.FormValue("option")
+	if opt != "" {
+		e = dbc.Create(&db.Option{
+			QuestionID: q.ID,
+			Text:       opt,
+		}).Error
+		if e != nil {
+			c.AbortWithError(500, e)
+			return
+		}
 	}
 	c.Redirect(http.StatusSeeOther, c.Request.Referer())
 }
@@ -425,13 +472,46 @@ func questions(c *gin.Context) {
 	})
 }
 func getBook(c *gin.Context) {
-	var v db.Book
-	e := dbc.First(&v, c.Param("bid")).Error
+	var b db.Book
+	e := dbc.First(&b, c.Param("bid")).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return
 	}
-	c.HTML(200, "book.html", v)
+
+	if c.Query("action") == "play" {
+		var q db.Question
+		e = dbc.Model(&db.Question{}).Where("slayed is null and done is null").Order("id asc").Limit(1).First(&q).Error
+		if e != nil {
+			if e == gorm.ErrRecordNotFound {
+				c.HTML(200, "done.html", b)
+				return
+			}
+			c.AbortWithError(500, e)
+			return
+		}
+		c.Redirect(http.StatusSeeOther, "/books/"+c.Param("bid")+"/questions/"+strconv.FormatUint(uint64(q.ID), 10))
+		return
+	}
+
+	var total int64
+	e = dbc.Model(&db.Question{}).Where("book_id=?", b.ID).Count(&total).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+	var remains int64
+	e = dbc.Model(&db.Question{}).Where("book_id=? and slayed is null and done is null", b.ID).Count(&remains).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+
+	c.HTML(200, "book.html", D{
+		"Book":    b,
+		"Remains": remains,
+		"Total":   total,
+	})
 }
 func deleteBook(c *gin.Context) {
 	e := dbc.Delete(&db.Book{}, c.Param("bid")).Error
