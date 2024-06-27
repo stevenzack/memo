@@ -38,8 +38,8 @@
     <ul>
         {{range .Options}}
         <li>
-            {{if ne .Video ""}}[Video]{{end}}
-            {{if ne .Audio ""}}[Audio]{{end}}
+            {{if ne .Video.String ""}}[Video]{{end}}
+            {{if ne .Audio.String ""}}[Audio]{{end}}
 
             <pre>{{.Text}}</pre>
             <a href="./options/{{.ID}}"> ✍️ </a>

@@ -7,7 +7,7 @@ type Book struct {
 	Name string
 	Desc string
 
-	Round     uint8
-	DailyPlan uint16
-	TodayDone uint16
+	Round     uint8  `gorm:"not null;default:0;"`
+	DailyPlan uint16 `gorm:"not null;default:0;"`
+	TodayDone uint16 `gorm:"not null;default:0;"`
 }

@@ -15,7 +15,7 @@
     Today's Task: 
     <b> {{subAbs .Book.DailyPlan .Book.TodayDone}} / {{.Book.DailyPlan}} </b>
     <p>
-        {{if .Question.Slayed.Bool}}🗡️{{else}} {{if .Question.Done.Bool}}✅{{else}}❓{{end}}{{end}}
+        {{if .Question.Slayed.Bool}}🗡️{{else}} {{if .Question.Done.Bool}}✅{{else}} {{if gt .Question.WrongCount.Int16 0}}❌{{else}} ❓{{end}} {{end}}{{end}}
         {{.Question.Text}}
         <a href="./{{.Question.ID}}/options"> ✍️ </a>
     </p>
@@ -52,7 +52,11 @@
         <input type="submit" value="🗡️Slay">
     </form>{{end}}
 
-    <button>❌Wrong</button>
+    <form method="post" action="" enctype="multipart/form-data" style="display: inline-block;">
+        <input type="hidden" name="wrong" value="true">
+        <input type="submit" value="❌Wrong">
+    </form>
+
     <form method="post" action="" enctype="multipart/form-data" style="display: inline-block;">
         <input type="hidden" name="done" value="true">
         <input type="submit" value="✅Done">

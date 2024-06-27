@@ -22,6 +22,9 @@
         Total Remains: <b>{{.Remains}} / {{.Total}} </b>
     </p>
     <p>
+        🗡️Total Slayed: <b> {{.Slayed}} </b>
+    </p>
+    <p>
         Today's Task: <b> {{subAbs .Book.DailyPlan .Book.TodayDone}} / {{.Book.DailyPlan}} </b>
     </p>
     <details>
@@ -37,6 +40,7 @@
             </div>
             <input type="submit" value="submit">
         </form>
+        <button onclick="if(confirm('Are you sure to reset all progress?'))location.href='?action=reset'">Reset all progress</button>
     </details>
     <hr>
     <a href="/books/{{.Book.ID}}/questions">Load All Questions</a>

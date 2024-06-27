@@ -49,12 +49,7 @@ func main() {
 		"add": func(a, b int) int {
 			return a + b
 		},
-		"subAbs": func(a, b uint16) uint16 {
-			if a < b {
-				return 0
-			}
-			return a - b
-		},
+		"subAbs": util.SubAbs,
 	})
 	t, e := t.ParseGlob("*.html")
 	if e != nil {
@@ -518,19 +513,40 @@ func getBook(c *gin.Context) {
 		return
 	}
 
-	if c.Query("action") == "play" {
-		//play
+	switch c.Query("action") {
+	case "play":
+		// play
 		if b.DailyPlan <= 0 {
 			c.String(200, "Daily plan of this book is not set.")
 			return
 		}
+		// today wrong count
+		var todayWrongCount int64
+		e = dbc.Model(&db.Question{}).Where("book_id=? and done is null and slayed is null and wrong_count>0", b.ID).Count(&todayWrongCount).Error
+		if e != nil {
+			c.AbortWithError(500, e)
+			return
+		}
+
+		remains := util.SubAbs(b.DailyPlan, b.TodayDone)
+		if remains <= uint16(todayWrongCount) {
+			var q db.Question
+			e = dbc.Model(&db.Question{}).Where("slayed is null and done is null and wrong_count>0").Order("id asc").Limit(1).First(&q).Error
+			if e != nil && e != gorm.ErrRecordNotFound {
+				c.AbortWithError(500, e)
+				return
+			}
+			if e == nil {
+				c.Redirect(http.StatusSeeOther, "/books/"+c.Param("bid")+"/questions/"+strconv.FormatUint(uint64(q.ID), 10))
+				return
+			}
+		}
 
 		// find the next not done
 		var q db.Question
-		e = dbc.Model(&db.Question{}).Where("slayed is null and done is null").Order("wrong_count asc").Order("id asc").Limit(1).First(&q).Error
+		e = dbc.Model(&db.Question{}).Where("slayed is null and done is null and wrong_count is null").Order("id asc").Limit(1).First(&q).Error
 		if e != nil {
 			if e == gorm.ErrRecordNotFound {
-
 				// next round
 				e = dbc.Model(&b).Update("round", b.Round+1).Update("today_done", 0).Error
 				if e != nil {
@@ -556,6 +572,22 @@ func getBook(c *gin.Context) {
 		}
 		c.Redirect(http.StatusSeeOther, "/books/"+c.Param("bid")+"/questions/"+strconv.FormatUint(uint64(q.ID), 10))
 		return
+	case "reset":
+		//reset progress
+		e = dbc.Model(b).Update("round", 0).Update("daily_plan", 0).Update("today_done", 0).Error
+		if e != nil {
+			log.Println(e)
+			c.String(500, e.Error())
+			return
+		}
+
+		e = dbc.Model(&db.Question{}).Where("book_id=?", b.ID).Update("slayed", nil).Update("done", nil).Update("wrong_count", nil).Error
+		if e != nil {
+			c.AbortWithError(500, e)
+			return
+		}
+		c.Redirect(http.StatusSeeOther, "/books/"+c.Param("bid"))
+		return
 	}
 
 	var total int64
@@ -564,6 +596,13 @@ func getBook(c *gin.Context) {
 		c.AbortWithError(500, e)
 		return
 	}
+	var slayed int64
+	e = dbc.Model(&db.Question{}).Where("book_id=? and slayed =1", b.ID).Count(&slayed).Error
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
+
 	var remains int64
 	e = dbc.Model(&db.Question{}).Where("book_id=? and slayed is null and done is null", b.ID).Count(&remains).Error
 	if e != nil {
@@ -575,8 +614,10 @@ func getBook(c *gin.Context) {
 		"Book":    b,
 		"Remains": remains,
 		"Total":   total,
+		"Slayed":  slayed,
 	})
 }
+
 func deleteBook(c *gin.Context) {
 	e := dbc.Delete(&db.Book{}, c.Param("bid")).Error
 	if e != nil {
@@ -586,6 +627,7 @@ func deleteBook(c *gin.Context) {
 	os.RemoveAll(resourceDir + "/books/" + c.Param("bid"))
 	c.Redirect(http.StatusSeeOther, c.Request.Referer())
 }
+
 func home(c *gin.Context) {
 	var vs []db.Book
 	e := dbc.Find(&vs).Error
