@@ -21,13 +21,13 @@
     <details open>
         <summary>Add</summary>
         <form method="post" action="">
-            <textarea name="text"></textarea><br>
+            <textarea name="text" id="add-question-text"></textarea><br>
             <textarea name="option"></textarea><br>
             <input type="submit" value="submit">
         </form>
     </details>
 
-    <ul>
+    <ol>
         {{range .Questions}}
         <li>
            {{if .Slayed.Bool}}🗡️{{else}} {{if .Done.Bool}}✅{{else}}❓{{end}}{{end}}
@@ -37,7 +37,7 @@
             <button onclick="if(confirm('Are you sure to delete?')) fetch('/books/{{$.Book.ID}}/questions/{{.ID}}',{method:'DELETE'})">🚮</button>
         </li>
         {{end}}
-    </ul>
+    </ol>
     
     {{if gt .Page 1}}
     <a href="?page={{add .Page -1}}">&lt;Prev</a>
@@ -48,6 +48,10 @@
     {{if lt .Page .TotalPage}}
     <a href="?page={{add .Page 1}}">Next&gt;</a>
     {{end}}
+
+    <script type="text/javascript">
+        document.getElementById('add-question-text').focus();
+    </script>
 </body>
 
 </html>
