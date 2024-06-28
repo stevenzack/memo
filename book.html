@@ -13,7 +13,7 @@
         <a href="?action=play"> ▶️ </a>
     </h1>
     <p>
-        {{.Desc}}
+        {{.Book.Desc}}
     </p>
     <p>
         Round: <b>{{.Book.Round}} </b>
@@ -31,9 +31,7 @@
         <summary> ✍️ </summary>
         <form method="post" action="">
             <input type="text" name="name" value="{{.Book.Name}}"><br>
-            <textarea name="desc">
-                {{.Book.Desc}}
-            </textarea><br>
+            <textarea name="desc" cols="60" rows="10">{{.Book.Desc}}</textarea><br>
             <div>
                 DailyPlan:
                 <input type="number" name="daily_plan" placeholder="How many questions you want to do everyday?" value="{{.Book.DailyPlan}}">
