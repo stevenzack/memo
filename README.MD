@@ -10,3 +10,12 @@
 - review
 - [x]add video for QAs
 - question list -> show hasMedia icon
+
+# Forgetting Curve
+
+- First time
+- 15m
+- 24h
+- 3d
+- 7d
+- 1 Month

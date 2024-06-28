@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stevenzack/memo/db"
@@ -279,11 +281,25 @@ func updateQuestion(c *gin.Context) {
 
 	// inc done
 	if incDone {
-		e = dbc.Model(&b).Update("today_done", b.TodayDone+1).Error
+		e = dbc.Model(&b).Update("last_done_at", time.Now()).Error
 		if e != nil {
 			c.AbortWithError(500, e)
 			return
 		}
+
+		if !q.FirstReview.Valid {
+			e = dbc.Model(&b).Update("today_done", b.TodayDone+1).Error
+			if e != nil {
+				c.AbortWithError(500, e)
+				return
+			}
+			e = dbc.Model(&q).Where("first_review is null").Update("first_review", time.Now()).Error
+			if e != nil {
+				c.AbortWithError(500, e)
+				return
+			}
+		}
+
 	}
 
 	if playNext {
@@ -520,6 +536,36 @@ func getBook(c *gin.Context) {
 			c.String(200, "Daily plan of this book is not set.")
 			return
 		}
+
+		// review yesterday's questions
+		if b.LastDoneAt.Time.Day() != time.Now().Day() {
+			var args = []any{b.ID}
+			const reviewWhere = "first_review between ? and ?"
+			reviewTime := []string{}
+			// yesterday
+			reviewTime = append(reviewTime, reviewWhere)
+			args = append(args, util.YesterdayAgo(time.Now())...)
+
+			// 3 days ago
+			reviewTime = append(reviewTime, reviewWhere)
+			args = append(args, util.ThreeDaysAgo(time.Now())...)
+
+			// 7 days ago
+			reviewTime = append(reviewTime, reviewWhere)
+			args = append(args, util.SevenDaysAgo(time.Now())...)
+
+			// 1 month ago
+			reviewTime = append(reviewTime, reviewWhere)
+			args = append(args, util.OneMonthAgo(time.Now())...)
+
+			e = dbc.Model(&db.Question{}).Where("book_id=? and done=1 and slayed is null and ("+strings.Join(reviewTime, " or ")+")", args...).Update("done", nil).Error
+			if e != nil {
+				c.AbortWithError(500, e)
+				return
+			}
+			log.Println("review triggered")
+		}
+
 		// today wrong count
 		var todayWrongCount int64
 		e = dbc.Model(&db.Question{}).Where("book_id=? and done is null and slayed is null and wrong_count>0", b.ID).Count(&todayWrongCount).Error
@@ -530,6 +576,7 @@ func getBook(c *gin.Context) {
 
 		remains := util.SubAbs(b.DailyPlan, b.TodayDone)
 		if remains <= uint16(todayWrongCount) {
+			// today's wrong questions
 			var q db.Question
 			e = dbc.Model(&db.Question{}).Where("slayed is null and done is null and wrong_count>0").Order("id asc").Limit(1).First(&q).Error
 			if e != nil && e != gorm.ErrRecordNotFound {
@@ -553,7 +600,7 @@ func getBook(c *gin.Context) {
 					c.AbortWithError(500, e)
 					return
 				}
-				e = dbc.Model(&db.Question{}).Where("book_id=?", b.ID).Update("done", nil).Error
+				e = dbc.Model(&db.Question{}).Where("book_id=?", b.ID).Update("done", nil).Update("first_review", nil).Update("wrong_count", nil).Error
 				if e != nil {
 					c.AbortWithError(500, e)
 					return
@@ -581,7 +628,7 @@ func getBook(c *gin.Context) {
 			return
 		}
 
-		e = dbc.Model(&db.Question{}).Where("book_id=?", b.ID).Update("slayed", nil).Update("done", nil).Update("wrong_count", nil).Error
+		e = dbc.Model(&db.Question{}).Where("book_id=?", b.ID).Update("slayed", nil).Update("done", nil).Update("wrong_count", nil).Update("first_review", nil).Error
 		if e != nil {
 			c.AbortWithError(500, e)
 			return
@@ -590,6 +637,14 @@ func getBook(c *gin.Context) {
 		return
 	}
 
+	if time.Now().Day() != b.UpdatedAt.Day() {
+		b.TodayDone = 0
+		e = dbc.Model(&b).Update("today_done", 0).Error
+		if e != nil {
+			c.AbortWithError(500, e)
+			return
+		}
+	}
 	var total int64
 	e = dbc.Model(&db.Question{}).Where("book_id=?", b.ID).Count(&total).Error
 	if e != nil {

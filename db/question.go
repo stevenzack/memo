@@ -14,7 +14,8 @@ type Question struct {
 	Video  sql.NullString
 	Audio  sql.NullString
 
-	Slayed     sql.NullBool  `gorm:"index"`
-	Done       sql.NullBool  `gorm:"index"`
-	WrongCount sql.NullInt16 `gorm:"index"`
+	FirstReview sql.NullTime  `gorm:"index"`
+	Slayed      sql.NullBool  `gorm:"index"`
+	Done        sql.NullBool  `gorm:"index"`
+	WrongCount  sql.NullInt16 `gorm:"index"`
 }
