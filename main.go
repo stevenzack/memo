@@ -502,7 +502,7 @@ func questions(c *gin.Context) {
 	}
 
 	var vs []db.Question
-	const size = 10
+	const size = 30
 	page, _ := strconv.Atoi(c.Query("page"))
 	if page <= 1 {
 		page = 1
