@@ -43,7 +43,7 @@
             {{if ne .Audio.String ""}}[Audio]{{end}}
 
             {{range (splitByComma .Images.String)}}
-            <img src="/{{.}}" alt="img"><br>
+            <img loading="lazy"  src="/{{.}}" alt="img"><br>
             {{end}}
             <a href="./options/{{.ID}}"> ✍️ </a>
             <button onclick="fetch('/books/{{$.Book.ID}}/questions/{{$.Question.ID}}/options/{{.ID}}', { method: 'DELETE' })">Delete</button>

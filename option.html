@@ -18,7 +18,7 @@
             <li>
                 <input id="delete-image-{{$i}}" type="checkbox" name="delete-image" value="{{$v}}">
                 <label for="delete-image-{{$i}}">Mark as delete</label>
-                <img src="/{{$v}}" alt="img" width="500">
+                <img loading="lazy" src="/{{$v}}" alt="img" width="500">
             </li>
             {{end}}
         </ol>

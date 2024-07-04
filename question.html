@@ -21,10 +21,10 @@
     </p>
     <p>
         {{if ne .Question.Audio.String ""}}
-        <audio src="/{{.Question.Audio.String}}" autoplay controls></audio>
+        <audio src="/{{.Question.Audio.String}}" preload="none" controls></audio>
         {{end}}
         {{if ne .Question.Video.String ""}}
-        <video src="/{{.Question.Video.String}}" autoplay controls></video>
+        <video src="/{{.Question.Video.String}}" preload="none" controls></video>
         {{end}}
     </p>
     <hr>
@@ -39,7 +39,7 @@
             <video src="/{{.Video.String}}" controls></video>
             {{end}}
             {{range (splitByComma .Images.String)}}
-            <img src="/{{.}}" alt="img"><br>
+            <img loading="lazy" src="/{{.}}" alt="img"><br>
             {{end}}
             <hr>
         {{end}}
