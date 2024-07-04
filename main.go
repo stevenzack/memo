@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"html/template"
 	"io"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -52,6 +54,16 @@ func main() {
 			return a + b
 		},
 		"subAbs": util.SubAbs,
+		"splitByComma": func(s string) []string {
+			var out []string
+			for _, s := range strings.Split(s, ",") {
+				if s == "" {
+					continue
+				}
+				out = append(out, s)
+			}
+			return out
+		},
 	})
 	t, e := t.ParseGlob("*.html")
 	if e != nil {
@@ -85,7 +97,7 @@ func main() {
 	r.POST("/books/:bid/questions/:qid", updateQuestion)
 	r.GET("/books/:bid/questions/:qid/options", getAnswers)
 	r.POST("/books/:bid/questions/:qid/options", addAnswers)
-	r.POST("/books/:bid/questions/:qid/options/:oid", updateAnswer)
+	r.POST("/books/:bid/questions/:qid/options/:oid", updateOption)
 	r.DELETE("/books/:bid/questions/:qid/options/:oid", deleteAnswer)
 	r.GET("/books/:bid/questions/:qid/options/:oid", getAnswer)
 	r.Run()
@@ -109,7 +121,7 @@ func deleteAnswer(c *gin.Context) {
 	}
 	c.Redirect(http.StatusSeeOther, c.Request.Referer())
 }
-func updateAnswer(c *gin.Context) {
+func updateOption(c *gin.Context) {
 	var b db.Book
 	e := dbc.First(&b, c.Param("bid")).Error
 	if e != nil {
@@ -153,8 +165,33 @@ func updateAnswer(c *gin.Context) {
 	if video != nil {
 		os.Remove(o.Video.String)
 	}
+	img, e := readStaticFile(c, "image", dstDir)
+	if e != nil {
+		c.AbortWithError(500, e)
+		return
+	}
 
-	e = dbc.Model(&db.Option{}).Where("id=?", c.Param("oid")).Update("text", c.Request.FormValue("text")).Update("video", video).Update("audio", audio).Error
+	oldImages := strings.Split(o.Images.String, ",")
+	deleteImages := c.PostFormArray("delete-image")
+	var images []string
+	for _, v := range oldImages {
+		if slices.Contains(deleteImages, v) {
+			continue
+		}
+		images = append(images, v)
+	}
+
+	if img != nil {
+		images = append(images, *img)
+	}
+	if len(images) == 0 {
+		o.Images = sql.NullString{}
+	} else {
+		o.Images.String = strings.Join(images, ",")
+		o.Images.Valid = true
+	}
+
+	e = dbc.Model(&db.Option{}).Where("id=?", c.Param("oid")).Update("text", c.Request.FormValue("text")).Update("video", video).Update("audio", audio).Update("images", o.Images).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return

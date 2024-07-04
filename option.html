@@ -12,6 +12,16 @@
         <textarea rows="10" cols="40" name="text">{{.Text}}</textarea><br>
         Video: <input type="file" name="video"><br>
         Audio: <input type="file" name="audio"><br>
+        Image: <input type="file" name="image"> <br>
+        <ol>
+            {{range $i,$v := (splitByComma .Images.String)}}
+            <li>
+                <input id="delete-image-{{$i}}" type="checkbox" name="delete-image" value="{{$v}}">
+                <label for="delete-image-{{$i}}">Mark as delete</label>
+                <img src="/{{$v}}" alt="img" width="500">
+            </li>
+            {{end}}
+        </ol>
         <input type="submit" value="Save">
     </form>
 </body>

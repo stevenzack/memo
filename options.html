@@ -38,10 +38,13 @@
     <ul>
         {{range .Options}}
         <li>
+            <pre>{{.Text}}</pre>
             {{if ne .Video.String ""}}[Video]{{end}}
             {{if ne .Audio.String ""}}[Audio]{{end}}
 
-            <pre>{{.Text}}</pre>
+            {{range (splitByComma .Images.String)}}
+            <img src="/{{.}}" alt="img"><br>
+            {{end}}
             <a href="./options/{{.ID}}"> ✍️ </a>
             <button onclick="fetch('/books/{{$.Book.ID}}/questions/{{$.Question.ID}}/options/{{.ID}}', { method: 'DELETE' })">Delete</button>
             <hr>

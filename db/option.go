@@ -13,4 +13,5 @@ type Option struct {
 	Text       string
 	Video      sql.NullString
 	Audio      sql.NullString
+	Images     sql.NullString //split by comma
 }

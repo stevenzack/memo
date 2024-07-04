@@ -31,14 +31,17 @@
     <details>
         <summary>🙋Show option</summary>
         {{range .Options}}
-        <pre>{{.Text}}</pre>
-        {{if ne .Audio.String ""}}
-        <audio src="/{{.Audio.String}}" controls></audio>
-        {{end}}
-        {{if ne .Video.String ""}}
-        <video src="/{{.Video.String}}" controls></video>
-        {{end}}
-        <hr>
+            <pre>{{.Text}}</pre>
+            {{if ne .Audio.String ""}}
+            <audio src="/{{.Audio.String}}" controls></audio>
+            {{end}}
+            {{if ne .Video.String ""}}
+            <video src="/{{.Video.String}}" controls></video>
+            {{end}}
+            {{range (splitByComma .Images.String)}}
+            <img src="/{{.}}" alt="img"><br>
+            {{end}}
+            <hr>
         {{end}}
     </details>
     <hr>
