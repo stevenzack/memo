@@ -545,7 +545,7 @@ func questions(c *gin.Context) {
 	if page <= 1 {
 		page = 1
 	}
-	e = dbc.Where("book_id=?", b.ID).Offset((page - 1) * size).Limit(size).Find(&vs).Error
+	e = dbc.Where("book_id=?", b.ID).Order("id desc").Offset((page - 1) * size).Limit(size).Find(&vs).Error
 	if e != nil {
 		c.AbortWithError(500, e)
 		return
