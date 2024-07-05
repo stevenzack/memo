@@ -176,6 +176,7 @@ func updateOption(c *gin.Context) {
 	var images []string
 	for _, v := range oldImages {
 		if slices.Contains(deleteImages, v) {
+			os.Remove(v)
 			continue
 		}
 		images = append(images, v)
