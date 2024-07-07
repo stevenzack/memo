@@ -38,7 +38,7 @@
     <ul>
         {{range .Options}}
         <li>
-            <pre>{{.Text}}</pre>
+            <textarea style="width: 80%" rows="20" disabled>{{.Text}}</textarea>
             {{if ne .Video.String ""}}[Video]{{end}}
             {{if ne .Audio.String ""}}[Audio]{{end}}
 

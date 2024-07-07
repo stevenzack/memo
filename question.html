@@ -31,7 +31,7 @@
     <details>
         <summary>🙋Show option</summary>
         {{range .Options}}
-            <pre>{{.Text}}</pre>
+            <textarea style="width: 80%" rows="20" disabled>{{.Text}}</textarea>
             {{if ne .Audio.String ""}}
             <audio src="/{{.Audio.String}}" controls></audio>
             {{end}}
