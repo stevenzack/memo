@@ -9,9 +9,13 @@
 
 <body>
     {{template "header" .}}
-    <h1>
-        <a href="/books/{{.Book.ID}}/questions">Questions/</a>
+    <h1>📖
+        <a href="/books/{{.Book.ID}}/questions">{{.Book.Name}}/</a>
+        <a href="/books/{{.Book.ID}}?action=play"> ▶️ </a>
     </h1>
+    <h2>
+        <a href="/books/{{.Book.ID}}/questions">Questions/</a>
+    </h2>
     <p>
         <div>
             {{mdToHTML .Question.Text}}
