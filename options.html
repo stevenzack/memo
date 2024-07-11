@@ -13,7 +13,9 @@
         <a href="/books/{{.Book.ID}}/questions">Questions/</a>
     </h1>
     <p>
-        {{.Question.Text}}
+        <div>
+            {{mdToHTML .Question.Text}}
+        </div>
         <a href="."> ▶️ </a>
     <details>
         <summary> ✍️ </summary>
@@ -38,7 +40,9 @@
     <ul>
         {{range .Options}}
         <li>
-            <textarea style="width: 80%" rows="20" disabled>{{.Text}}</textarea><br>
+            <div>
+                {{mdToHTML .Text}}
+            </div>
             {{if ne .Video.String ""}}[Video]{{end}}
             {{if ne .Audio.String ""}}[Audio]{{end}}
 

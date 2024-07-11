@@ -16,7 +16,9 @@
     <b> {{subAbs .Book.DailyPlan .Book.TodayDone}} / {{.Book.DailyPlan}} </b>
     <p>
         {{if .Question.Slayed.Bool}}🗡️{{else}} {{if .Question.Done.Bool}}✅{{else}} {{if gt .Question.WrongCount.Int16 0}}❌{{else}} ❓{{end}} {{end}}{{end}}
-        {{.Question.Text}}
+        <div>
+            {{mdToHTML .Question.Text}}
+        </div>
         <a href="./{{.Question.ID}}/options"> ✍️ </a>
     </p>
     <p>
@@ -31,7 +33,9 @@
     <details>
         <summary>🙋Show option</summary>
         {{range .Options}}
-            <textarea style="width: 80%" rows="20" disabled>{{.Text}}</textarea><br>
+            <div>
+                {{mdToHTML .Text}}
+            </div>
             {{if ne .Audio.String ""}}
             <audio src="/{{.Audio.String}}" controls></audio>
             {{end}}

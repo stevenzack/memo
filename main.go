@@ -64,6 +64,7 @@ func main() {
 			}
 			return out
 		},
+		"mdToHTML": mdToHTML,
 	})
 	t, e := t.ParseGlob("*.html")
 	if e != nil {

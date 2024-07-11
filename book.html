@@ -12,7 +12,7 @@
     <h1>📕Book - {{.Book.Name}}
         <a href="?action=play"> ▶️ </a>
     </h1>
-    <pre>{{.Book.Desc}}</pre>
+    <div>{{mdToHTML .Book.Desc}}</div>
     <hr>
     <p>
         Round: <b>{{.Book.Round}} </b>
