@@ -23,6 +23,14 @@ jobs:
 
     - name: Build
       run: make b
+    - name: UPX compression
+      uses: crazy-max/ghaction-upx@v3
+      with:
+        version: latest
+        files: |
+          ./bin/main
+        args: -fq
+
     - name: SSH
       run: |
         mkdir -p ~/.ssh 
